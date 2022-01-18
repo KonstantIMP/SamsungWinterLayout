@@ -14,7 +14,9 @@ import java.lang.Math.sin
 import kotlin.random.Random
 
 class WinterLayout @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     private val paint = Paint()
@@ -52,7 +54,7 @@ class WinterLayout @JvmOverloads constructor(
     override fun onDrawForeground(canvas: Canvas?) {
         super.onDrawForeground(canvas)
 
-        if(!paused) {
+        if (!paused) {
             snows.forEach {
                 it.update()
                 it.draw(canvas!!)
@@ -66,21 +68,26 @@ class WinterLayout @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldw, oldh)
 
         for (i in 0 until snowCount) {
-            snows.add(Snow(Snow.Params(width, height, bitmap, minAmplitude, maxAmplitude,
-                minSpeed, maxSpeed, minSize, maxSize)))
+            snows.add(
+                Snow(
+                    Snow.Params(
+                        width, height, bitmap, minAmplitude, maxAmplitude,
+                        minSpeed, maxSpeed, minSize, maxSize
+                    )
+                )
+            )
         }
     }
 
-    fun startWinter(){
+    fun startWinter() {
         snows.forEach {
             it.start()
         }
 
         stopInProcess = false
 
-        if(animator?.isRunning == true)
+        if (animator?.isRunning == true)
             return
-
 
         animator = ValueAnimator.ofFloat(0f, 360f)
         animator?.addUpdateListener {
@@ -91,19 +98,19 @@ class WinterLayout @JvmOverloads constructor(
         paused = false
     }
 
-    fun stopWinter(){
-        if(stopInProcess)
+    fun stopWinter() {
+        if (stopInProcess)
             return
         stopInProcess = true
         var size = 0
         snows.forEach {
             it.stop {
                 size++
-                if(size == snowCount) {
+                if (size == snowCount) {
                     animator?.cancel()
                     paused = true
                     stopInProcess = false
-                    snows.forEach{
+                    snows.forEach {
                         it.restart()
                     }
                 }
@@ -111,7 +118,7 @@ class WinterLayout @JvmOverloads constructor(
         }
     }
 
-    fun stopImmediately(){
+    fun stopImmediately() {
         animator?.cancel()
         paused = true
         invalidate()
@@ -121,8 +128,16 @@ class WinterLayout @JvmOverloads constructor(
         }
     }
 
-    fun setSnowSize(size: Int, bitmap: Bitmap?=null, minAmplitude: Int=40, maxAmplitude: Int=50,
-                    minSpeed: Int=3, maxSpeed: Int=7, minSize: Int=20, maxSize: Int = 30){
+    fun setSnowSize(
+        size: Int,
+        bitmap: Bitmap? = null,
+        minAmplitude: Int = 40,
+        maxAmplitude: Int = 50,
+        minSpeed: Int = 3,
+        maxSpeed: Int = 7,
+        minSize: Int = 20,
+        maxSize: Int = 30
+    ) {
         snows.clear()
         snowCount = size
 
@@ -133,42 +148,40 @@ class WinterLayout @JvmOverloads constructor(
         this.maxSpeed = maxSpeed
         this.minSize = minSize
         this.maxSize = maxSize
-
     }
-
 }
 
 class Snow(val params: Params) {
 
-    private var positionX = 0f                                      //position of snowflake on X coordinate
-    private var positionY = 0f                                      //position of snowflake on Y coordinate
-    private var range = Random.nextInt(params.minAmplitude, params.maxAmplitude)          //range for amplitude
-    private var speedY = Random.nextInt(params.minSpeed,params.maxSpeed)            //speed on Y coordinate
-    private var speedX = Random.nextInt(45, 65)         //speed on X coordinate
-    private var startingOffset = Random.nextFloat()                 //for initializing starting point of snowflake
-    private var amplitude = params.parentWidth * range/100         // amplitude for sin function, depends on range field
-    private var horizontalOffset = Random.nextInt(4,7)  //horizontal offset, for keeping snowflakes on screen
-    private var degree = 0                                          //degree for sin function
-    private var size = Random.nextInt(params.minSize, params.maxSize)           //size of snow
+    private var positionX = 0f // position of snowflake on X coordinate
+    private var positionY = 0f // position of snowflake on Y coordinate
+    private var range = Random.nextInt(params.minAmplitude, params.maxAmplitude) // range for amplitude
+    private var speedY = Random.nextInt(params.minSpeed, params.maxSpeed) // speed on Y coordinate
+    private var speedX = Random.nextInt(45, 65) // speed on X coordinate
+    private var startingOffset = Random.nextFloat() // for initializing starting point of snowflake
+    private var amplitude = params.parentWidth * range / 100 // amplitude for sin function, depends on range field
+    private var horizontalOffset = Random.nextInt(4, 7) // horizontal offset, for keeping snowflakes on screen
+    private var degree = 0 // degree for sin function
+    private var size = Random.nextInt(params.minSize, params.maxSize) // size of snow
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var bitmap: Bitmap? = null
 
     private var stopped = false
     private var destroyed = false
-    private var callback: (()-> Unit)?= null
+    private var callback: (() -> Unit)? = null
 
     init {
         paint.color = Color.WHITE
         paint.style = Paint.Style.FILL
         positionY = (-Random.nextInt(1, params.parentHeight)).toFloat()
-        positionX = params.parentWidth/2f
-        if(params.bitmap!=null) {
+        positionX = params.parentWidth / 2f
+        if (params.bitmap != null) {
             bitmap = Bitmap.createScaledBitmap(params.bitmap, size, size, false)
         }
     }
 
-    fun draw(canvas: Canvas){
-        if(!destroyed && isOnScreen()) {
+    fun draw(canvas: Canvas) {
+        if (!destroyed && isOnScreen()) {
             if (bitmap != null)
                 canvas.drawBitmap(bitmap!!, positionX, positionY, paint)
             else
@@ -176,32 +189,32 @@ class Snow(val params: Params) {
         }
     }
 
-    private fun isOnScreen(): Boolean{
+    private fun isOnScreen(): Boolean {
         return positionY > 0 && positionY < params.parentHeight
     }
 
-    fun update(){
-        if(destroyed)
+    fun update() {
+        if (destroyed)
             return
 
         val radians = (PI / amplitude) * degree
         val sin = sin(radians)
         degree++
 
-        positionX = (sin * params.parentWidth/ horizontalOffset * speedX/100 + params.parentWidth*startingOffset).toFloat()
+        positionX = (sin * params.parentWidth / horizontalOffset * speedX / 100 + params.parentWidth * startingOffset).toFloat()
         positionY += speedY
 
-        if(positionY-size > params.parentHeight)
+        if (positionY - size > params.parentHeight)
             reset()
     }
 
-    fun stop(callback: (() -> Unit)){
+    fun stop(callback: (() -> Unit)) {
         stopped = true
         this.callback = callback
     }
 
-    private fun reset(){
-        if(stopped) {
+    private fun reset() {
+        if (stopped) {
             destroyed = true
             callback?.invoke()
         }
@@ -216,13 +229,12 @@ class Snow(val params: Params) {
         if (params.bitmap != null) {
             bitmap = Bitmap.createScaledBitmap(params.bitmap, size, size, false)
         }
-
     }
 
-    fun restart(){
+    fun restart() {
         reset()
         positionY = (-Random.nextInt(1, params.parentHeight)).toFloat()
-        positionX = params.parentWidth/2f
+        positionX = params.parentWidth / 2f
     }
 
     fun start() {
@@ -231,7 +243,15 @@ class Snow(val params: Params) {
         destroyed = false
     }
 
-    data class Params(val parentWidth: Int, val parentHeight: Int, val bitmap: Bitmap? = null,
-                      val minAmplitude: Int, val maxAmplitude: Int, val minSpeed: Int, val maxSpeed: Int,
-                      val minSize: Int, val maxSize: Int)
+    data class Params(
+        val parentWidth: Int,
+        val parentHeight: Int,
+        val bitmap: Bitmap? = null,
+        val minAmplitude: Int,
+        val maxAmplitude: Int,
+        val minSpeed: Int,
+        val maxSpeed: Int,
+        val minSize: Int,
+        val maxSize: Int
+    )
 }
