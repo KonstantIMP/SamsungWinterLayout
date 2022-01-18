@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WinterLayout</string>
+    <string name="start_snow">Запустить снег</string>
+    <string name="stop_snow">Остановить снег</string>
+</resources>
